@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>COMP 4302 Assignment 4</title>
+		<text>Sean O'Rielly, #201529450</text><br><br>
+		<text>move with wasd and click 'GO' to use mouse(ESC to exit mouse input mode)</text>
+    <style>
+      html, body {
+         margin: 0;
+         height: 100%;
+      }
+      #c {
+         width: 60%;
+         height: 60%;
+         display: block;
+      }
+  	</style>
+	</head>
+	<body>
+    <canvas id="c"></canvas>
+
+		<button id="b1">GO</button>
+		<button id="b2">Turn on/off right side light source</button>
+		<button id="b5">Turn on/off head lamp</button>
+		<br>
+		<text id="x-position"></text><br>
+		<text id="z-position"></text><br>
+		<br><br>
+		<text>ambiant light: </text>
+		<input type="range" min="0.0" max="1.0" value="0.25" class="slider" step="0.01" id="ambient">
+
+
+    <script src="js/three.js"></script>
+		<script src="js/OrbitControls.js"></script>
+		<script src="js/PointerLockControls.js"></script>
+
+    <script>
+			const canvas = document.querySelector('#c');
+      const renderer = new THREE.WebGLRenderer({canvas, antialias: true});
+			renderer.setSize( 1024, 768 );
+			let sceneObjects = [];
+
+			// Setup camera properties
+      const fov = 65;
+      const aspect = 2;  // the canvas default
+      const near = 0.01;
+      const far = 75;
+      const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
+      camera.position.z = 1.5;
+      camera.position.y = 0.5;
+			camera.position.x = 0;
+			document.getElementById("x-position").innerHTML = 0;
+			document.getElementById("z-position").innerHTML = 1.5;
+
+			// create loader object to give materials textures
+			const loader = new THREE.TextureLoader();
+
+			// Create the Scene
+      const scene = new THREE.Scene();
+
+			// change scene background color
+			scene.background = new THREE.Color( 0xff17f1 );
+
+			// enable shadows
+			renderer.shadowMap.enabled = true;
+			renderer.shadowMap.type = THREE.BasicShadowMap;
+
+			// add ambient light to the scene
+			let ambientLight = new THREE.AmbientLight(0xFFFFFF, 0.2);
+    	scene.add(ambientLight);
+
+			const light2 = new THREE.PointLight(0xFFFFFF, 1, 100);
+
+			light2.position.set(0, 5, 0);
+			light2.castShadow = true;
+			light2.shadow.camera.near = 0.1;
+			light2.shadow.camera.far = 25;
+			light2.shadowMapWidth = 1500; // default is 512
+			light2.shadowMapHeight = 1500; // default is 512
+			light2.intensity = 0.75;
+			scene.add(light2);
+
+
+			// create a headlamp attached to camera
+			const head_light = new THREE.PointLight(0xFFFFFF, 1, 100);
+
+			head_light.position.set(2, 0.5, 0);
+			head_light.castShadow = true;
+			head_light.shadow.camera.near = 0.1;
+			head_light.shadow.camera.far = 25;
+			head_light.shadowMapWidth = 1500; // default is 512
+			head_light.shadowMapHeight = 1500; // default is 512
+			head_light.intensity = 0.75;
+			camera.add(head_light);
+			scene.add(camera);
+
+
+			// This sphere has flat shading
+			const sphere_geometry = new THREE.SphereGeometry( 0.15, 16, 16 );
+			const sphere_material = new THREE.MeshStandardMaterial( {color: 0xff0000, flatShading: true} );
+			const sphere = new THREE.Mesh( sphere_geometry, sphere_material );
+			sphere.position.x = -1;
+			sphere.position.y = 0;
+			sphere.position.z = 0.1;
+			sphere.castShadow = true;
+			scene.add( sphere );
+
+
+			// This sphere has flat shading
+			const sphere_geo = new THREE.SphereGeometry( 0.7, 16, 16 );
+			const sphere_mat = new THREE.MeshStandardMaterial( {color: 0xFBFF33, flatShading: true} );
+			const light_sphere = new THREE.Mesh( sphere_geo, sphere_mat );
+			light_sphere.position.x = 0;
+			light_sphere.position.y = 5;
+			light_sphere.position.z = 0;
+			light_sphere.castShadow = false;
+			scene.add( light_sphere );
+
+
+			// Set dimensions of box objects
+      const boxWidth = 0.5;
+      const boxHeight = 0.5;
+      const boxDepth = 0.5;
+      const geometry = new THREE.BoxGeometry(boxWidth, boxHeight, boxDepth);
+
+
+			// make instance of cube with MeshPhongMaterial
+      function makeCube(geometry, color, x, y, z) {
+        const material = new THREE.MeshPhongMaterial({color});
+
+        const cube = new THREE.Mesh(geometry, material);
+        scene.add(cube);
+
+				cube.castShadow = true;
+
+        cube.position.x = x;
+
+        cube.position.y = y;
+
+				cube.position.z = z;
+
+        return cube;
+      }
+
+
+			// create array of cubes
+      const cubes = [
+        makeCube(geometry, 0xFBFF33,  1.5, 0, 0.0),
+      ];
+
+
+			function createPlane(x, y, z, width, depth, col, rx, ry, rz){
+				const plane_geometry = new THREE.PlaneGeometry( depth, width );
+				const plane_material = new THREE.MeshPhongMaterial( {color: col, side: THREE.DoubleSide} );
+
+				const plane = new THREE.Mesh( plane_geometry, plane_material );
+				plane.receiveShadow = true;
+				if(rx == true){
+					plane.rotateX( Math.PI / 2 );
+				}
+				if(ry == true){
+					plane.rotateY( Math.PI / 2 );
+				}
+				if(rz == true){
+					plane.rotateZ( Math.PI / 2 );
+				}
+				plane.position.set(x, y, z);
+				scene.add( plane );
+			}
+
+			function createPlane_wTexture(x, y, z, width, depth, t, rx, ry, rz){
+				const plane_geometry = new THREE.PlaneGeometry( depth, width );
+				const plane_material = new THREE.MeshPhongMaterial( {side: THREE.DoubleSide} );
+
+				const texture = loader.load(t);
+				plane_material.map = texture;
+
+				const plane = new THREE.Mesh( plane_geometry, plane_material );
+				plane.receiveShadow = true;
+				if(rx == true){
+					plane.rotateX( Math.PI / 2 );
+				}
+				if(ry == true){
+					plane.rotateY( Math.PI / 2 );
+				}
+				if(rz == true){
+					plane.rotateZ( Math.PI / 2 );
+				}
+				plane.position.set(x, y, z);
+				scene.add( plane );
+			}
+
+			createPlane(0.0,-0.45,0.0,48, 48, 0xffffff, true, false, false);
+
+			createPlane(0.0, 7.0,0.0, 48, 48, 0xffffff, true, false, false);
+
+			createPlane_wTexture(0.0,-0.45,-1.5, 30, 15, 'fancy_wall.jpg', false, false, true);
+
+			createPlane_wTexture(15.0,-0.45,0.0, 85, 15, 'fancy_wall.jpg', false, true, true);
+
+			createPlane_wTexture(-15,-0.45,14.0, 25, 15, 'fancy_wall.jpg', false, false, true);
+
+			createPlane_wTexture(15,-0.45,14.0, 25, 15, 'fancy_wall.jpg', false, false, true);
+
+			createPlane_wTexture(-15.0,-0.45,0.0, 85, 15, 'fancy_wall.jpg', false, true, true);
+
+			createPlane_wTexture(-15,-0.45,24.0, 25, 15, 'fancy_wall.jpg', false, false, true);
+
+			createPlane_wTexture(15,-0.45,24.0, 25, 15, 'fancy_wall.jpg', false, false, true);
+
+			// elevator floor
+			const elevator_geometry = new THREE.PlaneGeometry( 5, 5 );
+			const elevator_material = new THREE.MeshPhongMaterial( {color: 0xffffff, side: THREE.DoubleSide} );
+
+			const elevator = new THREE.Mesh( elevator_geometry, elevator_material );
+			elevator.receiveShadow = true;
+			elevator.position.set(0, -0.45, 25);
+			elevator.rotateX( Math.PI / 2 );
+			scene.add( elevator );
+
+			// set up mouse controls
+			let controls = new THREE.PointerLockControls(camera, renderer.domElement);
+			let clock = new THREE.Clock();
+
+			let button1 = document.querySelector('#b1');
+			button1.addEventListener('click',()=>{
+				controls.lock();
+			});
+
+			let keyboard = [];
+			addEventListener('keydown',(e)=>{
+				keyboard[e.key] = false;
+			});
+			addEventListener('keyup',(e)=>{
+				keyboard[e.key] = true;
+			});
+
+			document.getElementById("b2").addEventListener("click", function() {
+				if(light2.intensity == 0){
+					light2.intensity = 0.75;
+				}
+				else{
+					light2.intensity = 0;
+				}
+			});
+
+			document.getElementById("b5").addEventListener("click", function() {
+				if(head_light.intensity == 0){
+					head_light.intensity = 0.75;
+				}
+				else{
+					head_light.intensity = 0;
+				}
+			});
+
+			document.getElementById("ambient").addEventListener("click", function() {
+				ambientLight.intensity = document.getElementById("ambient").value;
+			});
+
+			// function to create movement with wasd keys. Gets called in each render loop
+			function processKeyboard(){
+				if(keyboard['w']){
+					controls.moveForward(-0.075);
+				}
+				if(keyboard['s']){
+					controls.moveForward(0.075);
+				}
+				if(keyboard['a']){
+					controls.moveRight(0.075);
+				}
+				if(keyboard['d']){
+					controls.moveRight(-0.075);
+				}
+			}
+
+			let kboard = [];
+			addEventListener('keydown',(e)=>{
+				kboard[e.key] = true;
+			});
+			addEventListener('keyup',(e)=>{
+				kboard[e.key] = false;
+			});
+
+			function moveLight_p1(){
+				if(kboard['m']){
+					light_sphere.position.z = 0;
+					light2.position.z = 0;
+				}
+			}
+
+			function moveLight_p2(){
+				if(kboard['n']){
+					light_sphere.position.z = 5;
+					light2.position.z = 5;
+				}
+			}
+
+			function light_p1(){
+				if(kboard['k']){
+					light2.intensity = 0;
+				}
+			}
+
+			function light_p2(){
+				if(kboard['l']){
+					light2.intensity = 0.75;
+				}
+			}
+
+			var x = 0;
+
+      function render(time) {
+        time *= 0.00075;  // convert time to seconds
+
+        cubes.forEach((cube, ndx) => {
+
+          cube.rotation.x = time;
+          cube.rotation.y = time;
+        });
+
+				// keyboard movement and collision detection with walls
+				if(camera.position.x < 14.5 && camera.position.x > -14.5 && camera.position.z < 14.0 && camera.position.z > -1.5){
+					processKeyboard();
+					if(camera.position.x >= 14.5){
+						camera.position.x = 14.4;
+					}
+					else if(camera.position.x <= -14.5){
+						camera.position.x = -14.4;
+					}
+					else if(camera.position.z >= 14){
+						camera.position.z = 13.8;
+					}
+					else if(camera.position.z <= -1.5){
+						camera.position.z = -1.3;
+					}
+				}
+
+				if(camera.position.x < 2.5 && camera.position.x > -2.5 && camera.position.z > 3){
+					processKeyboard();
+				}
+
+				if(camera.position.z > 14 && camera.position.z < 24 && camera.position.x < 14.5 && camera.position.x > -14.5){
+					processKeyboard();
+					if(camera.position.x >= 14.5){
+						camera.position.x = 14.4;
+					}
+					else if(camera.position.x <= -14.5){
+						camera.position.x = -14.4;
+					}
+					else if(camera.position.z >= 24){
+						camera.position.z = 23.8;
+					}
+					else if(camera.position.z <= 14){
+						camera.position.z = 14.2;
+					}
+				}
+
+				document.getElementById("x-position").innerHTML = camera.position.x;
+				document.getElementById("z-position").innerHTML = camera.position.z;
+
+				moveLight_p1();
+				moveLight_p2();
+
+				light_p1();
+				light_p2();
+
+        renderer.render(scene, camera);
+
+        requestAnimationFrame(render);
+      }
+      requestAnimationFrame(render);
+    </script>
+
+	</body>
+</html>
