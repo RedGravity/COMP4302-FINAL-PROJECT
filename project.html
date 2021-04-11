@@ -4,7 +4,14 @@
 		<meta charset="utf-8">
 		<title>COMP 4302 Assignment 4</title>
 		<text>Sean O'Rielly, #201529450</text><br><br>
-		<text>move with wasd and click 'GO' to use mouse(ESC to exit mouse input mode)</text>
+		<text>This is an art museum</text><br><br>
+		<text>move with wasd and click 'GO' to use mouse(ESC to exit mouse input mode)</text><br><br>
+		<text>move ligth between rooms with number keys 1-4 for each of the 4 rooms</text><br><br>
+		<text>toggle light off with 'k' and on with 'o'</text><br><br>
+		<text>How to use the elevator to go to second floor:</text><br>
+		<text>move camera onto red elevator floor,</text><br>
+		<text>then use the 'u' key to go up,</text><br>
+		<text>and 'i' key to go down.	</text><br>
     <style>
       html, body {
          margin: 0;
@@ -21,10 +28,14 @@
     <canvas id="c"></canvas>
 
 		<button id="b1">GO</button>
-		<button id="b2">Turn on/off right side light source</button>
+		<button id="b2">Turn on/off room light</button>
 		<button id="b5">Turn on/off head lamp</button>
 		<br>
+		<text>camera x-position</text>
 		<text id="x-position"></text><br>
+		<text>camera y-position</text>
+		<text id="y-position"></text><br>
+		<text>camera z-position</text>
 		<text id="z-position"></text><br>
 		<br><br>
 		<text>ambiant light: </text>
@@ -72,7 +83,7 @@
 
 			const light2 = new THREE.PointLight(0xFFFFFF, 1, 100);
 
-			light2.position.set(0, 5, 0);
+			light2.position.set(0, 5, 6);
 			light2.castShadow = true;
 			light2.shadow.camera.near = 0.1;
 			light2.shadow.camera.far = 25;
@@ -109,11 +120,13 @@
 
 			// This sphere has flat shading
 			const sphere_geo = new THREE.SphereGeometry( 0.7, 16, 16 );
-			const sphere_mat = new THREE.MeshStandardMaterial( {color: 0xFBFF33, flatShading: true} );
+			const sphere_mat = new THREE.MeshStandardMaterial( {/*color: 0xFBFF33,*/ flatShading: false} );
+			const sphere_texture = loader.load("im/fire.jpg");
+			sphere_mat.map = sphere_texture;
 			const light_sphere = new THREE.Mesh( sphere_geo, sphere_mat );
 			light_sphere.position.x = 0;
 			light_sphere.position.y = 5;
-			light_sphere.position.z = 0;
+			light_sphere.position.z = 6;
 			light_sphere.castShadow = false;
 			scene.add( light_sphere );
 
@@ -191,31 +204,99 @@
 				scene.add( plane );
 			}
 
-			createPlane(0.0,-0.45,0.0,48, 48, 0xffffff, true, false, false);
+			const planes = [
+				createPlane(0.0,-0.45,0.0,48, 48, 0xffffff, true, false, false),
 
-			createPlane(0.0, 7.0,0.0, 48, 48, 0xffffff, true, false, false);
+				createPlane(0.0, 7.0,0.0, 48, 48, 0xffffff, true, false, false),
 
-			createPlane_wTexture(0.0,-0.45,-1.5, 30, 15, 'fancy_wall.jpg', false, false, true);
+				createPlane(0.0, 12.5,0.0, 48, 48, 0xffffff, true, false, false),
 
-			createPlane_wTexture(15.0,-0.45,0.0, 85, 15, 'fancy_wall.jpg', false, true, true);
+				// fisrt floor paintings
+				createPlane_wTexture(0.0,2,-1.49, 2.5, 1.65, 'im/mona.jpg', false, false, false),
 
-			createPlane_wTexture(-15,-0.45,14.0, 25, 15, 'fancy_wall.jpg', false, false, true);
+				createPlane_wTexture(-9.0 ,2,-1.49, 2.5, 2.0, 'im/chub.jpg', false, false, false),
 
-			createPlane_wTexture(15,-0.45,14.0, 25, 15, 'fancy_wall.jpg', false, false, true);
+				createPlane_wTexture(-8.0 ,2.5,13.95, 3, 4.2, 'im/fish.webp', false, false, false),
 
-			createPlane_wTexture(-15.0,-0.45,0.0, 85, 15, 'fancy_wall.jpg', false, true, true);
+				createPlane_wTexture(-8.0 ,2.5,14.05, 4, 7, 'im/clocks.jpg', false, false, false),
 
-			createPlane_wTexture(-15,-0.45,24.0, 25, 15, 'fancy_wall.jpg', false, false, true);
+				createPlane_wTexture(8.0 ,2.5,13.95, 4, 2.5, 'im/bees.jpg', false, false, false),
 
-			createPlane_wTexture(15,-0.45,24.0, 25, 15, 'fancy_wall.jpg', false, false, true);
+				createPlane_wTexture(8.0 ,2.5,14.05, 4, 4, 'im/brush.jpg', false, false, false),
+
+				createPlane_wTexture(8.0 ,2.5 , 23.95, 4, 6, 'im/blue.webp', false, false, false),
+
+				createPlane_wTexture(-8.0 ,2.5 , 23.95, 4, 6, 'im/desert.jpg', false, false, false),
+
+				createPlane_wTexture(9.0 ,2,-1.49, 4, 7, 'im/eye.webp', false, false, false),
+
+				createPlane_wTexture(14.9 , 2, 6, 4, 7, 'im/spooky.jpg', false, true, false),
+
+				createPlane_wTexture(14.9 ,3,19, 4, 7, 'im/green.jpg', false, true, false),
+
+				createPlane_wTexture(-14.95, 2, 19.0, 4, 6, 'im/rip.jpg', false, true, false),
+
+				createPlane_wTexture(-14.95, 3, 6, 4, 5, 'im/colors.jpg', false, true, false),
+
+				// second floor paintings
+				createPlane_wTexture(0.0, 10,-1.49, 2.5, 2.2, 'im/more_fish.jpg', false, false, false),
+
+				createPlane_wTexture(-9.0 , 10,-1.49, 2.5, 3, 'im/music.jpg', false, false, false),
+
+				createPlane_wTexture(-8.0 , 10, 13.95, 3, 5, 'im/yellow.jpg', false, false, false),
+
+				createPlane_wTexture(-8.0 , 10, 14.05, 4, 7, 'im/hand.webp', false, false, false),
+
+				createPlane_wTexture(8.0 , 10, 13.95, 3.5, 2.5, 'im/apple.jpg', false, false, false),
+
+				createPlane_wTexture(8.0 , 10, 14.05, 4, 7, 'im/venus.jpg', false, false, false),
+
+				createPlane_wTexture(8.0 , 10, 23.95, 4, 7.2, 'im/cross.jpeg', false, false, false),
+
+				createPlane_wTexture(-8.0 , 10, 23.95, 4, 6, 'im/park.jpg', false, false, false),
+
+				createPlane_wTexture(9.0, 10, -1.49, 4, 4, 'im/streaks.jpg', false, false, false),
+
+				createPlane_wTexture(14.9, 10, 6, 4, 5, 'im/tree.webp', false, true, false),
+
+				createPlane_wTexture(14.9, 10, 19, 4, 7, 'im/green_room.webp', false, true, false),
+
+				createPlane_wTexture(-14.95, 10, 19.0, 4, 6, 'im/match.webp', false, true, false),
+
+				createPlane_wTexture(-14.95, 10, 6, 4, 5, 'im/beach.webp', false, true, false),
+
+				// right elevator wall
+				createPlane_wTexture(-2.5 ,2,29, 40, 10, 'fancy_wall.jpg', false, true, false),
+
+				// left elevator wall
+				createPlane_wTexture(2.5 ,2,29, 45, 10, 'fancy_wall.jpg', false, true, false),
+
+				// back elevator wall
+				createPlane_wTexture(0.0 ,2,29, 45, 10, 'fancy_wall.jpg', false, false, false),
+
+				createPlane_wTexture(0.0,-0.45,-1.5, 45, 35, 'fancy_wall.jpg', false, false, true),
+
+				createPlane_wTexture(15.0,-0.45,0.0, 85, 35, 'fancy_wall.jpg', false, true, true),
+
+				createPlane_wTexture(-15,-0.45,14.0, 25, 35, 'fancy_wall.jpg', false, false, true),
+
+				createPlane_wTexture(15,-0.45,14.0, 25, 35, 'fancy_wall.jpg', false, false, true),
+
+				createPlane_wTexture(-15.0,-0.45,0.0, 85, 35, 'fancy_wall.jpg', false, true, true),
+
+				createPlane_wTexture(-15,-0.45,24.0, 25, 35, 'fancy_wall.jpg', false, false, true),
+
+				createPlane_wTexture(15,-0.45,24.0, 25, 35, 'fancy_wall.jpg', false, false, true),
+			];
+
 
 			// elevator floor
-			const elevator_geometry = new THREE.PlaneGeometry( 5, 5 );
-			const elevator_material = new THREE.MeshPhongMaterial( {color: 0xffffff, side: THREE.DoubleSide} );
+			const elevator_geometry = new THREE.PlaneGeometry( 7, 7 );
+			const elevator_material = new THREE.MeshPhongMaterial( {color: 0xff2d00 , side: THREE.DoubleSide} );
 
 			const elevator = new THREE.Mesh( elevator_geometry, elevator_material );
 			elevator.receiveShadow = true;
-			elevator.position.set(0, -0.45, 25);
+			elevator.position.set(0, -0.44, 27);
 			elevator.rotateX( Math.PI / 2 );
 			scene.add( elevator );
 
@@ -261,17 +342,25 @@
 			// function to create movement with wasd keys. Gets called in each render loop
 			function processKeyboard(){
 				if(keyboard['w']){
-					controls.moveForward(-0.075);
+					controls.moveForward(-0.025);
 				}
 				if(keyboard['s']){
-					controls.moveForward(0.075);
+					controls.moveForward(0.025);
 				}
 				if(keyboard['a']){
-					controls.moveRight(0.075);
+					controls.moveRight(0.025);
 				}
 				if(keyboard['d']){
-					controls.moveRight(-0.075);
+					controls.moveRight(-0.025);
 				}
+				/*
+				if(keyboard['q']){
+					camera.position.y -= 0.04
+				}
+				if(keyboard['e']){
+					camera.position.y += 0.04
+				}
+				*/
 			}
 
 			let kboard = [];
@@ -283,16 +372,38 @@
 			});
 
 			function moveLight_p1(){
-				if(kboard['m']){
-					light_sphere.position.z = 0;
-					light2.position.z = 0;
+				if(kboard['1']){
+					light_sphere.position.z = 6;
+					light2.position.z = 6;
+					light_sphere.position.y = 5;
+					light2.position.y = 5;
 				}
 			}
 
 			function moveLight_p2(){
-				if(kboard['n']){
-					light_sphere.position.z = 5;
-					light2.position.z = 5;
+				if(kboard['2']){
+					light_sphere.position.z = 18;
+					light2.position.z = 18;
+					light_sphere.position.y = 5;
+					light2.position.y = 5;
+				}
+			}
+
+			function moveLight_p3(){
+				if(kboard['3']){
+					light_sphere.position.z = 18;
+					light2.position.z = 18;
+					light_sphere.position.y = 11;
+					light2.position.y = 11;
+				}
+			}
+
+			function moveLight_p4(){
+				if(kboard['4']){
+					light_sphere.position.z = 6;
+					light2.position.z = 6;
+					light_sphere.position.y = 11;
+					light2.position.y = 11;
 				}
 			}
 
@@ -303,8 +414,76 @@
 			}
 
 			function light_p2(){
-				if(kboard['l']){
+				if(kboard['o']){
 					light2.intensity = 0.75;
+				}
+			}
+
+			function moveElevatorUp(){
+				if(kboard['u'] && camera.position.y < 7.85){
+					if(camera.position.x < 2.5 && camera.position.x > -2.5 && camera.position.z > 24 && camera.position.z < 29){
+						camera.position.y += 0.01;
+						elevator.position.y += 0.01;
+					}
+				}
+			}
+
+			function moveElevatorDown(){
+				if(kboard['i'] && camera.position.y > 0.52){
+					if(camera.position.x < 2.5 && camera.position.x > -2.5 && camera.position.z > 24 && camera.position.z < 29){
+						camera.position.y -= 0.01;
+						elevator.position.y -= 0.01;
+					}
+				}
+			}
+
+			// keyboard movement and collision detection with walls
+			function collision_detection(){
+				if(camera.position.x < 2.5 && camera.position.x > -2.5 && camera.position.z > 3){
+					processKeyboard();
+				}
+				else if(camera.position.x < 14.5 && camera.position.x > -14.5 && camera.position.z < 14.0 && camera.position.z > -1.5){
+					processKeyboard();
+					if(camera.position.x >= 14.5){
+						camera.position.x = 14.42;
+					}
+					else if(camera.position.x <= -14.5){
+						camera.position.x = -14.42;
+					}
+					else if(camera.position.z >= 14){
+						camera.position.z = 13.90;
+					}
+					else if(camera.position.z <= -1.5){
+						camera.position.z = -1.42;
+					}
+				}
+				else if(camera.position.z > 14 && camera.position.z < 24 && camera.position.x < 14.5 && camera.position.x > -14.5){
+					processKeyboard();
+					if(camera.position.x >= 14.5){
+						camera.position.x = 14.4;
+					}
+					else if(camera.position.x <= -14.5){
+						camera.position.x = -14.4;
+					}
+					else if(camera.position.z >= 24){
+						camera.position.z = 23.8;
+					}
+					else if(camera.position.z <= 14){
+						camera.position.z = 14.1;
+					}
+				}
+
+				if(camera.position.z > 24 && camera.position.z < 29.5){
+					processKeyboard();
+					if(camera.position.x >= 2.4){
+						camera.position.x = 2.35;
+					}
+					else if(camera.position.x <= -2.4){
+						camera.position.x = -2.35;
+					}
+					else if(camera.position.z >= 29){
+						camera.position.z = 28.5;
+					}
 				}
 			}
 
@@ -319,48 +498,19 @@
           cube.rotation.y = time;
         });
 
-				// keyboard movement and collision detection with walls
-				if(camera.position.x < 14.5 && camera.position.x > -14.5 && camera.position.z < 14.0 && camera.position.z > -1.5){
-					processKeyboard();
-					if(camera.position.x >= 14.5){
-						camera.position.x = 14.4;
-					}
-					else if(camera.position.x <= -14.5){
-						camera.position.x = -14.4;
-					}
-					else if(camera.position.z >= 14){
-						camera.position.z = 13.8;
-					}
-					else if(camera.position.z <= -1.5){
-						camera.position.z = -1.3;
-					}
-				}
+				collision_detection();
 
-				if(camera.position.x < 2.5 && camera.position.x > -2.5 && camera.position.z > 3){
-					processKeyboard();
-				}
-
-				if(camera.position.z > 14 && camera.position.z < 24 && camera.position.x < 14.5 && camera.position.x > -14.5){
-					processKeyboard();
-					if(camera.position.x >= 14.5){
-						camera.position.x = 14.4;
-					}
-					else if(camera.position.x <= -14.5){
-						camera.position.x = -14.4;
-					}
-					else if(camera.position.z >= 24){
-						camera.position.z = 23.8;
-					}
-					else if(camera.position.z <= 14){
-						camera.position.z = 14.2;
-					}
-				}
+				moveElevatorUp();
+				moveElevatorDown();
 
 				document.getElementById("x-position").innerHTML = camera.position.x;
+				document.getElementById("y-position").innerHTML = camera.position.y;
 				document.getElementById("z-position").innerHTML = camera.position.z;
 
 				moveLight_p1();
 				moveLight_p2();
+				moveLight_p3();
+				moveLight_p4();
 
 				light_p1();
 				light_p2();
